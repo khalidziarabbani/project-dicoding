@@ -27,7 +27,7 @@ hour_data['weekday'] = hour_data['weekday'].map(weekday_mapping)
 st.title("Dashboard Analisis Sepeda")
 st.sidebar.title("Menu")
 
-# fitur interaktif untuk filter data
+# Fitur interaktif untuk filter data
 st.sidebar.subheader("Filter Data")
 start_date = st.sidebar.date_input("Pilih Tanggal Mulai", day_data['dteday'].min())
 end_date = st.sidebar.date_input("Pilih Tanggal Akhir", day_data['dteday'].max())
