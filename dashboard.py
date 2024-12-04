@@ -27,6 +27,14 @@ hour_data['weekday'] = hour_data['weekday'].map(weekday_mapping)
 st.title("Dashboard Analisis Sepeda")
 st.sidebar.title("Menu")
 
+# fitur interaktif untuk filter data
+st.sidebar.subheader("Filter Data")
+start_date = st.sidebar.date_input("Pilih Tanggal Mulai", day_data['dteday'].min())
+end_date = st.sidebar.date_input("Pilih Tanggal Akhir", day_data['dteday'].max())
+
+# filter data berdasarkan tanggal
+filtered_data = day_data[(day_data['dteday'] >= pd.to_datetime(start_date)) & (day_data['dteday'] <= pd.to_datetime(end_date))]
+
 # pilihan untuk memilih visualisasi
 visualization = st.sidebar.selectbox("Pilih Visualisasi", (
     "Distribusi Penyewaan Sepeda Berdasarkan Musim",
@@ -36,7 +44,19 @@ visualization = st.sidebar.selectbox("Pilih Visualisasi", (
     "Analisis RFM"
 ))
 
-# Menampilkan subjudul yang berubah sesuai pilihan
+# menambahkan filter tambahan untuk visualisasi lainnya (Season, Weather, Weekday)
+if visualization != "Penyewaan Sepeda Berdasarkan Jam":
+    season_filter = st.sidebar.multiselect("Pilih Musim", options=filtered_data['season'].unique(), default=filtered_data['season'].unique())
+    weather_filter = st.sidebar.multiselect("Pilih Cuaca", options=filtered_data['weathersit'].unique(), default=filtered_data['weathersit'].unique())
+    weekday_filter = st.sidebar.multiselect("Pilih Hari dalam Minggu", options=filtered_data['weekday'].unique(), default=filtered_data['weekday'].unique())
+    
+    filtered_data = filtered_data[
+        (filtered_data['season'].isin(season_filter)) & 
+        (filtered_data['weathersit'].isin(weather_filter)) &
+        (filtered_data['weekday'].isin(weekday_filter))
+    ]
+
+# menampilkan subjudul yang berubah sesuai pilihan
 if visualization == "Distribusi Penyewaan Sepeda Berdasarkan Musim":
     st.subheader("Distribusi Penyewaan Sepeda Berdasarkan Musim")
 elif visualization == "Pola Penyewaan Sepeda Berdasarkan Hari":
@@ -51,7 +71,7 @@ elif visualization == "Analisis RFM":
 # visualisasi sesuai pilihan
 if visualization == "Distribusi Penyewaan Sepeda Berdasarkan Musim":
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.boxplot(data=day_data, x='season', y='cnt', palette='Set3', ax=ax)
+    sns.boxplot(data=filtered_data, x='season', y='cnt', palette='Set3', ax=ax)
     ax.set_title('Distribusi Penyewaan Sepeda Berdasarkan Musim')
     ax.set_ylabel('Jumlah Penyewaan')
     ax.set_xlabel('Musim')
@@ -59,7 +79,7 @@ if visualization == "Distribusi Penyewaan Sepeda Berdasarkan Musim":
 
 elif visualization == "Pola Penyewaan Sepeda Berdasarkan Hari":
     fig, ax = plt.subplots(figsize=(10, 6))
-    weekday_counts = day_data.groupby('weekday')['cnt'].mean().reindex(
+    weekday_counts = filtered_data.groupby('weekday')['cnt'].mean().reindex(
         ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     )
     weekday_counts.plot(kind='bar', color='skyblue', ax=ax)
@@ -71,7 +91,7 @@ elif visualization == "Pola Penyewaan Sepeda Berdasarkan Hari":
 
 elif visualization == "Pengaruh Cuaca terhadap Penyewaan Sepeda":
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(data=day_data, x='weathersit', y='cnt', palette='coolwarm', ci=None, ax=ax)
+    sns.barplot(data=filtered_data, x='weathersit', y='cnt', palette='coolwarm', ci=None, ax=ax)
     ax.set_title('Pengaruh Kondisi Cuaca terhadap Penyewaan Sepeda')
     ax.set_ylabel('Jumlah Penyewaan')
     ax.set_xlabel('Kondisi Cuaca')
@@ -90,8 +110,8 @@ elif visualization == "Penyewaan Sepeda Berdasarkan Jam":
     st.pyplot(fig)
 
 elif visualization == "Analisis RFM":
-    rfm_data = day_data.groupby('mnth').agg(
-        recency=('dteday', lambda x: (day_data['dteday'].max() - x.max()).days),
+    rfm_data = filtered_data.groupby('mnth').agg(
+        recency=('dteday', lambda x: (filtered_data['dteday'].max() - x.max()).days),
         frequency=('cnt', 'count'),
         monetary=('cnt', 'sum')
     ).reset_index()
