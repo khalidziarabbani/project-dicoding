@@ -32,7 +32,7 @@ Untuk menjalankan proyek ini secara lokal, ikuti langkah-langkah berikut:
 1. **Clone repositori**:
 
     ```
-    git clone <repository_url>
+    git clone https://github.com/khalidziarabbani/project-dicoding.git
     cd <repository_name>
     ```
 
@@ -59,7 +59,7 @@ Untuk menjalankan proyek ini secara lokal, ikuti langkah-langkah berikut:
 4. **Jalankan dashboard Streamlit**:
 
     ```
-    streamlit run dashboard/dashboard.py
+    streamlit run dashboard.py
     ```
 
     Ini akan meluncurkan aplikasi Streamlit di browser default Anda.
